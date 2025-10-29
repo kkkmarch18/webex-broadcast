@@ -24,8 +24,22 @@
     </style>
   </head>
   <body>
-    <div class="msg">
-      🚨 System Maintenance tonight 10 PM – 12 AM 🚨
-    </div>
+    <div id="broadcast" class="msg">Loading broadcast...</div>
+
+    <script>
+      async function loadMessage() {
+        try {
+          const response = await fetch('message.json?_=' + Date.now());
+          const data = await response.json();
+          document.getElementById('broadcast').innerText = data.message;
+        } catch (err) {
+          document.getElementById('broadcast').innerText = 'No broadcast available.';
+        }
+      }
+
+      loadMessage();
+      // Auto-refresh every 30 seconds
+      setInterval(loadMessage, 30000);
+    </script>
   </body>
 </html>
