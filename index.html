@@ -12,6 +12,7 @@
         color: #444;
         text-align: center;
       }
+
       .msg {
         margin: 10px;
         padding: 10px;
@@ -20,6 +21,12 @@
         border-radius: 8px;
         font-size: 16px;
         font-weight: 600;
+        animation: blink 1.5s infinite; /* Blink animation */
+      }
+
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
       }
     </style>
   </head>
@@ -29,7 +36,7 @@
     <script>
       async function loadMessage() {
         try {
-          const response = await fetch('message.json?_=' + Date.now());
+          const response = await fetch('message.json?_=' + Date.now(), { cache: 'no-store' });
           const data = await response.json();
           document.getElementById('broadcast').innerText = data.message;
         } catch (err) {
