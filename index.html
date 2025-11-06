@@ -9,44 +9,70 @@
         padding: 0;
         font-family: Arial, sans-serif;
         background: #fffbea;
-        color: #444;
-        text-align: center;
+        color: #333;
+        overflow: hidden;
       }
 
-      .msg {
-        margin: 10px;
-        padding: 10px;
+      .marquee-container {
+        width: 100%;
         background: #fff3cd;
         border: 1px solid #ffeeba;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 600;
-        animation: blink 1.5s infinite; /* Blink animation */
+        border-radius: 6px;
+        padding: 8px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        position: relative;
       }
 
-      @keyframes blink {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.3; }
+      .marquee-text {
+        display: inline-block;
+        font-size: 16px;
+        font-weight: 600;
+        color: #444;
+        position: relative;
+        animation: scroll-left 12s linear infinite;
+      }
+
+      @keyframes scroll-left {
+        0% {
+          transform: translateX(100%);
+        }
+        100% {
+          transform: translateX(-100%);
+        }
       }
     </style>
   </head>
   <body>
-    <div id="broadcast" class="msg">Loading broadcast...</div>
+    <div class="marquee-container">
+      <span id="broadcast" class="marquee-text">Loading broadcast...</span>
+    </div>
 
     <script>
+      let lastMessage = '';
+
       async function loadMessage() {
         try {
           const response = await fetch('message.json?_=' + Date.now(), { cache: 'no-store' });
           const data = await response.json();
-          document.getElementById('broadcast').innerText = data.message;
+          const broadcastEl = document.getElementById('broadcast');
+
+          if (data.message !== lastMessage) {
+            broadcastEl.innerText = data.message;
+            lastMessage = data.message;
+
+            // Restart animation by resetting DOM element
+            broadcastEl.style.animation = 'none';
+            void broadcastEl.offsetWidth; // reflow trigger
+            broadcastEl.style.animation = 'scroll-left 12s linear infinite';
+          }
         } catch (err) {
           document.getElementById('broadcast').innerText = 'No broadcast available.';
         }
       }
 
       loadMessage();
-      // Auto-refresh every 3 seconds
-      setInterval(loadMessage, 3000);
+      setInterval(loadMessage, 3000); // refresh every 3 seconds
     </script>
   </body>
 </html>
