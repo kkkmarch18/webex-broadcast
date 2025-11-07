@@ -7,17 +7,16 @@
       html, body {
         margin: 0;
         padding: 0;
-        width: 100%;
-        height: 100%;
+        width: 40px;
+        height: 40px;
         background: transparent;
+        overflow: visible;
         font-family: Arial, sans-serif;
       }
 
-      /* Bell icon */
+      /* Bell icon (only visible part of iframe) */
       #bell {
-        position: absolute;
-        right: 10px;
-        top: 10px;
+        position: relative;
         width: 40px;
         height: 40px;
         border-radius: 50%;
@@ -28,6 +27,7 @@
         justify-content: center;
         cursor: pointer;
         animation: blink 1.5s infinite alternate;
+        z-index: 1;
       }
 
       @keyframes blink {
@@ -35,31 +35,28 @@
         to { opacity: 0.5; }
       }
 
-      /* Popup box */
+      /* Popup message (overlays Webex content) */
       #popup {
-        position: absolute;
+        position: fixed; /* fixed to viewport, not layout */
         top: 60px;
-        right: 10px;
-        width: 250px;
+        right: 20px;
+        width: 260px;
         background: #fff;
         border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
         display: none;
-        padding: 10px;
+        padding: 12px;
         text-align: left;
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        z-index: 99999; /* ensures it's above Webex UI */
       }
 
       #close {
         float: right;
         font-weight: bold;
         cursor: pointer;
-      }
-
-      #message {
-        margin: 0;
-        font-size: 14px;
-        font-weight: 600;
-        color: #333;
       }
     </style>
   </head>
@@ -78,7 +75,6 @@
 
       let lastMessage = "";
 
-      // Fetch broadcast message
       async function loadMessage() {
         try {
           const response = await fetch("https://raw.githubusercontent.com/kkkmarch18/webex-broadcast/main/message.json?_=" + Date.now());
@@ -93,22 +89,25 @@
         }
       }
 
-      // Toggle popup
       bell.addEventListener("click", () => {
-        if (popup.style.display === "none") {
-          popup.style.display = "block";
-          bell.style.animation = "none"; // stop blinking when opened
-        } else {
+        const visible = popup.style.display === "block";
+        popup.style.display = visible ? "none" : "block";
+        bell.style.animation = visible ? "blink 1.5s infinite alternate" : "none";
+      });
+
+      close.addEventListener("click", () => {
+        popup.style.display = "none";
+        bell.style.animation = "blink 1.5s infinite alternate";
+      });
+
+      // Close popup when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!popup.contains(e.target) && !bell.contains(e.target)) {
           popup.style.display = "none";
+          bell.style.animation = "blink 1.5s infinite alternate";
         }
       });
 
-      // Close popup
-      close.addEventListener("click", () => {
-        popup.style.display = "none";
-      });
-
-      // Initial load + periodic refresh
       loadMessage();
       setInterval(loadMessage, 5000);
     </script>
